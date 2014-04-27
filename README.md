@@ -3,7 +3,7 @@ sneeze
 Messing around with getting stuff for my fantasy baseball league with the yahoo api.
 
 Installation
-===============
+--------------
 In a Python 2.7.6 virtualenv, I did this:
 pip install rauth
 pip install prettytable
