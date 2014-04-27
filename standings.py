@@ -43,17 +43,20 @@ def valueFromStat(stat):
 def formatFloat(numvar):
     return "%.2f" % numvar
 
-def teamFromStandings(team):
+def teamFromStandings(team,config):
     name = team['team'][0][2]['name']
     rank = team['team'][2]['team_standings']['rank']
     points_for = team['team'][2]['team_standings']['points_for']
     points_change = team['team'][2]['team_standings']['points_change']
     points_back = team['team'][2]['team_standings']['points_back']
+    # shouldn't be hard-coded:
     games = int(valueFromStat(team['team'][1]['team_stats']['stats'][1])) # stat_id : 1
-    batting_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][1:14]))
+    pitchingStartIndex = 1 + int(config['league']['numbattingstats'])
+    batting_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][1:pitchingStartIndex]))
     b_avg = formatFloat(batting_points / games)
+    # shouldn't be hard-coded:
     innings = float(valueFromStat(team['team'][1]['team_stats']['stats'][14])) # stat_id : 50
-    pitching_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][14:]))
+    pitching_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][pitchingStartIndex:]))
     p_avg = formatFloat(pitching_points / innings)
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
     return [rank, name, points_for, points_change, points_back, b_avg, p_avg]
@@ -93,8 +96,9 @@ def go(configfile=None):
     x.align["B_Avg"] = "r"
     x.align["P_Avg"] = "r"
     x.padding_width = 1 # One space between column edges and contents (default)
-    for i in range(20):
-        x.add_row(teamFromStandings(standings[str(i)]))
+    numTeams=int(config['league']['numteams'])
+    for i in range(numTeams):
+        x.add_row(teamFromStandings(standings[str(i)],config))
     f = "results/standings.%s.txt" % today
     with open(f,'w') as the_file:
         the_file.write(str(x))
