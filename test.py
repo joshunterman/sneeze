@@ -6,6 +6,7 @@ import json
 import yahooapi
 import prettytable
 import datetime
+import ConfigParser
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -13,6 +14,26 @@ class Usage(Exception):
 
 def usage():
     return "test.py"
+
+class Config():
+    def __init__(self, configfile):
+        self.dict={}
+        config = ConfigParser.ConfigParser()
+        config.read(configfile)
+        sections=config.sections()
+        for section in sections:
+            # print section
+            self[section]={}
+            options = config.options(section)
+            # print options
+            for option in options:
+                self[section][option]=config.get(section, option)
+
+    def __getitem__(self,key):
+        return self.dict[key]
+
+    def __setitem__(self,key,value):
+        self.dict[key]=value
 
 def valueFromStat(stat):
     return stat['stat']['value']
@@ -35,15 +56,18 @@ def teamFromStandings(team):
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
     return [rank, name, points_for, points_change, points_back, b_avg, p_avg]
 
+    
+
 def go(configfile=None):
-    #f = open("keyfile", "r")
-    #print f.readlines()[0]
-    api = yahooapi.YahooAPI("keyfile","tokenfile")
-    query='fantasy/v2/leagues;league_keys=328.l.82872/standings'
-    #query='https://fantasysports.yahooapis.com/fantasy/v2/leagues;league_keys=328.l.82872/standings'
-    #querystring = 'http://query.yahooapis.com/v1/yql?q==select * from fantasysports.leagues.standings where owner_guid="jwunterman" league_key="328.l.82872"'
-    #query = 'http://query.yahooapis.com/v1/yql?q==select * from fantasysports.leagues.standings where league_key="328.l.82872"'
-    #query = 'v1/yql?q==select * from fantasysports.leagues.standings where owner_guid="jwunterman" league_key="328.l.82872"'
+    if(configfile):
+        config = Config(configfile)
+    else:
+        config = Config("config")
+    keyfile=config['connection']['keyfile']
+    tokenfile=config['connection']['tokenfile']
+    leagueid=config['league']['id']
+    api = yahooapi.YahooAPI(keyfile,tokenfile)
+    query="fantasy/v2/leagues;league_keys=%s/standings" % leagueid
     response = api.request(query)
     raw_data = json.loads(response.text)
     standings = raw_data['fantasy_content']['leagues']['0']['league'][1]['standings'][0]['teams']
@@ -70,19 +94,19 @@ def main(argv=None):
         argv = sys.argv
     try:
         try:
-            opts, args = getopt.getopt(argv[1:], "hf:", ["help,file"])
+            opts, args = getopt.getopt(argv[1:], "hc:", ["help,config"])
         except getopt.error, msg:
             raise Usage(msg)
-        f = None
+        c = None
         for o, a in opts:
             if o in ("-h", "--help"):
                 raise Usage(usage())
-            elif o in ("-f", "--file"):
-                f = a
+            elif o in ("-c", "--config"):
+                c = a
             else:
                 raise Usage(usage())
-        if(f != None):
-            go(f)
+        if(c != None):
+            go(c)
         else:
             go()
             #raise Usage(usage())
