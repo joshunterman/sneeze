@@ -2,6 +2,7 @@ keyfile
 tokenfile
 yahooapi.py
 results/
+cache/
 
 *.pyc
 

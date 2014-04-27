@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
+import os
 import getopt
 #import mail
 import json
 import yahooapi
+import pickle
 import prettytable
 import datetime
 import ConfigParser
@@ -66,10 +68,21 @@ def go(configfile=None):
     keyfile=config['connection']['keyfile']
     tokenfile=config['connection']['tokenfile']
     leagueid=config['league']['id']
-    api = yahooapi.YahooAPI(keyfile,tokenfile)
-    query="fantasy/v2/leagues;league_keys=%s/standings" % leagueid
-    response = api.request(query)
-    raw_data = json.loads(response.text)
+    raw_data=None
+    today = datetime.datetime.now().strftime("%Y%m%d")
+    f = "cache/standings.%s" % today
+    if os.path.isfile(f):
+        print "reading cache for %s" % today
+        with open(f,'r') as the_file:
+            raw_data = pickle.load(the_file)
+    else:
+        print "go get data for %s" % today
+        api = yahooapi.YahooAPI(keyfile,tokenfile)
+        query="fantasy/v2/leagues;league_keys=%s/standings" % leagueid
+        response = api.request(query)
+        raw_data = json.loads(response.text)
+        with open(f,'w') as the_file:
+            pickle.dump(raw_data, the_file)
     standings = raw_data['fantasy_content']['leagues']['0']['league'][1]['standings'][0]['teams']
     x = prettytable.PrettyTable(["Rank", "Name", "Points", "Change", "Back", "B_Avg", "P_Avg"])
     x.align["Rank"] = "r"
@@ -82,11 +95,10 @@ def go(configfile=None):
     x.padding_width = 1 # One space between column edges and contents (default)
     for i in range(20):
         x.add_row(teamFromStandings(standings[str(i)]))
-    d = datetime.datetime.now().strftime("%Y%m%d")
-    f = "results/standings.%s.txt" % d
-    with open(f,'w') as the_file:        
+    f = "results/standings.%s.txt" % today
+    with open(f,'w') as the_file:
         the_file.write(str(x))
-    #mail.mail(f,"Standings %s" % d,["sneeze@unterman.net"],"")
+    #mail.mail(f,"Standings %s" % today,["sneeze@unterman.net"],"")
     print str(x)
 
 def main(argv=None):
