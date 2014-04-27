@@ -59,7 +59,7 @@ def go(configfile=None):
     for i in range(20):
         x.add_row(teamFromStandings(standings[str(i)]))
     d = datetime.datetime.now().strftime("%Y%m%d")
-    f = "standings.%s.txt" % d
+    f = "results/standings.%s.txt" % d
     with open(f,'w') as the_file:        
         the_file.write(str(x))
     #mail.mail(f,"Standings %s" % d,["sneeze@unterman.net"],"")
