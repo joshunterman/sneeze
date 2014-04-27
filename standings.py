@@ -61,7 +61,19 @@ def teamFromStandings(team,config):
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
     return [rank, name, points_for, points_change, points_back, b_avg, p_avg]
 
-    
+def tableFromTeams(teams):
+    x = prettytable.PrettyTable(["Rank", "Name", "Points", "Change", "Back", "B_Avg", "P_Avg"])
+    x.align["Rank"] = "r"
+    x.align["Name"] = "l" # Left align team names
+    x.align["Points"] = "r"
+    x.align["Change"] = "r"
+    x.align["Back"] = "r"
+    x.align["B_Avg"] = "r"
+    x.align["P_Avg"] = "r"
+    x.padding_width = 1 # One space between column edges and contents (default)
+    for team in teams:
+        x.add_row(team)
+    return x
 
 def go(configfile=None):
     if(configfile):
@@ -87,23 +99,16 @@ def go(configfile=None):
         with open(f,'w') as the_file:
             pickle.dump(raw_data, the_file)
     standings = raw_data['fantasy_content']['leagues']['0']['league'][1]['standings'][0]['teams']
-    x = prettytable.PrettyTable(["Rank", "Name", "Points", "Change", "Back", "B_Avg", "P_Avg"])
-    x.align["Rank"] = "r"
-    x.align["Name"] = "l" # Left align team names
-    x.align["Points"] = "r"
-    x.align["Change"] = "r"
-    x.align["Back"] = "r"
-    x.align["B_Avg"] = "r"
-    x.align["P_Avg"] = "r"
-    x.padding_width = 1 # One space between column edges and contents (default)
+    teams = []
     numTeams=int(config['league']['numteams'])
     for i in range(numTeams):
-        x.add_row(teamFromStandings(standings[str(i)],config))
+        teams.append(teamFromStandings(standings[str(i)],config))
+    table = tableFromTeams(teams)
     f = "results/standings.%s.txt" % today
     with open(f,'w') as the_file:
-        the_file.write(str(x))
+        the_file.write(str(table))
     #mail.mail(f,"Standings %s" % today,["sneeze@unterman.net"],"")
-    print str(x)
+    print str(table)
 
 def main(argv=None):
     if argv is None:
