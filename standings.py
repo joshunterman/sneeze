@@ -53,16 +53,19 @@ def teamFromStandings(team,config):
     games = int(valueFromStat(team['team'][1]['team_stats']['stats'][1])) # stat_id : 1
     pitchingStartIndex = 1 + int(config['league']['numbattingstats'])
     batting_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][1:pitchingStartIndex]))
-    b_avg = formatFloat(batting_points / games)
+    b_avg = batting_points / games
+    b_avgStr = formatFloat(b_avg)
     # shouldn't be hard-coded:
     innings = float(valueFromStat(team['team'][1]['team_stats']['stats'][14])) # stat_id : 50
     pitching_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][pitchingStartIndex:]))
-    p_avg = formatFloat(pitching_points / innings)
+    p_avg = pitching_points / innings
+    p_avgStr = formatFloat(p_avg)
+    projection = formatFloat(b_avg * 115 * 14 + p_avg * 1350)
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
-    return [rank, name, points_for, points_change, points_back, b_avg, p_avg]
+    return [rank, name, points_for, points_change, points_back, b_avgStr, p_avgStr, projection]
 
 def tableFromTeams(teams):
-    x = prettytable.PrettyTable(["Rank", "Name", "Points", "Change", "Back", "B_Avg", "P_Avg"])
+    x = prettytable.PrettyTable(["Rank", "Name", "Points", "Change", "Back", "B_Avg", "P_Avg", "Tot_Proj"])
     x.align["Rank"] = "r"
     x.align["Name"] = "l" # Left align team names
     x.align["Points"] = "r"
@@ -70,6 +73,7 @@ def tableFromTeams(teams):
     x.align["Back"] = "r"
     x.align["B_Avg"] = "r"
     x.align["P_Avg"] = "r"
+    x.align["Tot_Proj"] = "r"
     x.padding_width = 1 # One space between column edges and contents (default)
     for team in teams:
         x.add_row(team)
