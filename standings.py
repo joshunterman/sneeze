@@ -107,6 +107,7 @@ def go(configfile=None):
     numTeams=int(config['league']['numteams'])
     for i in range(numTeams):
         teams.append(teamFromStandings(standings[str(i)],config))
+    teams = sorted(teams, key=lambda t: t[-1], reverse=True)
     table = tableFromTeams(teams)
     f = "results/standings.%s.txt" % today
     with open(f,'w') as the_file:
