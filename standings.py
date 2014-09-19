@@ -40,8 +40,9 @@ class Config():
 def valueFromStat(stat):
     return stat['stat']['value']
 
-def formatFloat(numvar):
-    return "%.2f" % numvar
+def formatFloat(numvar,digits=2):
+    s="%."+str(digits)+"f"
+    return s % numvar
 
 def teamFromStandings(team,config):
     name = team['team'][0][2]['name']
@@ -54,12 +55,12 @@ def teamFromStandings(team,config):
     pitchingStartIndex = 1 + int(config['league']['numbattingstats'])
     batting_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][1:pitchingStartIndex]))
     b_avg = batting_points / games
-    b_avgStr = formatFloat(b_avg)
+    b_avgStr = formatFloat(b_avg,3)
     # shouldn't be hard-coded:
     innings = float(valueFromStat(team['team'][1]['team_stats']['stats'][14])) # stat_id : 50
     pitching_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][pitchingStartIndex:]))
     p_avg = pitching_points / innings
-    p_avgStr = formatFloat(p_avg)
+    p_avgStr = formatFloat(p_avg,3)
     projection = formatFloat(b_avg * 115 * 14 + p_avg * 1350)
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
     return [rank, name, points_for, points_change, points_back, b_avgStr, p_avgStr, projection]
