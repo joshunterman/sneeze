@@ -54,12 +54,18 @@ def teamFromStandings(team,config):
     games = int(valueFromStat(team['team'][1]['team_stats']['stats'][1])) # stat_id : 1
     pitchingStartIndex = 1 + int(config['league']['numbattingstats'])
     batting_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][1:pitchingStartIndex]))
-    b_avg = batting_points / games
+    if(games > 0):
+        b_avg = batting_points / games
+    else:
+        b_avg = 0
     b_avgStr = formatFloat(b_avg,3)
     # shouldn't be hard-coded:
     innings = float(valueFromStat(team['team'][1]['team_stats']['stats'][14])) # stat_id : 50
     pitching_points = sum(map(lambda x:float(valueFromStat(x)),team['team'][1]['team_points']['stats'][pitchingStartIndex:]))
-    p_avg = pitching_points / innings
+    if(innings > 0):
+        p_avg = pitching_points / innings
+    else:
+        p_avg = 0
     p_avgStr = formatFloat(p_avg,3)
     projection = formatFloat(b_avg * 115 * 14 + p_avg * 1350)
     #return "%s,%s,%s,%s,%s" % (rank, name, points_for, points_change, points_back)
